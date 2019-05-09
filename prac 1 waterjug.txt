@@ -1,0 +1,226 @@
+#include <bits/stdc++.h>
+#include <queue> 
+
+using namespace std;
+#define mm cout<<endl<<
+
+typedef struct node{
+    int water_in_jug1 = 0;
+    int water_in_jug2 = 0;
+    int parent_id = 0; 
+    int prev_operation = 0;
+} nn;
+
+int af,bf,id_next_unused = 0,goal;
+queue <int> id_queue; 
+nn nodes[4*10000+4];
+map<pair<int, int>, int> processed; 
+
+void define_node(int j1,int j2,int my_id,int pid,int opr)
+{
+    nodes[my_id].water_in_jug1 = j1;
+    nodes[my_id].parent_id = pid;
+    nodes[my_id].water_in_jug2 = j2;
+    nodes[my_id].prev_operation = opr;
+}
+
+void rule1(int node_to_perform)
+{
+    if(nodes[node_to_perform].water_in_jug1==af)
+        return;
+    else
+    {
+        nodes[id_next_unused].parent_id = node_to_perform;
+        nodes[id_next_unused].water_in_jug1 = af;
+        nodes[id_next_unused].water_in_jug2 = nodes[node_to_perform].water_in_jug2;
+        nodes[id_next_unused].prev_operation = 1;
+        if(processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] == 0)
+            processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] =1,id_queue.push(id_next_unused),mm "1",id_next_unused++;
+    }
+}
+
+void rule2(int node_to_perform)
+{
+    if(nodes[node_to_perform].water_in_jug2==bf)
+        return;
+    else
+    {
+        nodes[id_next_unused].parent_id = node_to_perform;
+        nodes[id_next_unused].water_in_jug2 = bf;
+        nodes[id_next_unused].water_in_jug1 = nodes[node_to_perform].water_in_jug1;
+        nodes[id_next_unused].prev_operation = 2;
+        if(processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] == 0)
+            processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] =1,id_queue.push(id_next_unused),mm "2",id_next_unused++;
+    }
+}
+
+void rule3(int node_to_perform)
+{
+    if(nodes[node_to_perform].water_in_jug1==0)
+        return;
+    else
+    {
+        nodes[id_next_unused].parent_id = node_to_perform;
+        nodes[id_next_unused].water_in_jug1 = 0;
+        nodes[id_next_unused].water_in_jug2 = nodes[node_to_perform].water_in_jug2;
+        nodes[id_next_unused].prev_operation = 3;
+        if(processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] == 0)
+            processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] =1,id_queue.push(id_next_unused),mm "3",id_next_unused++;
+    }
+}
+
+void rule4(int node_to_perform)
+{
+    if(nodes[node_to_perform].water_in_jug2==0)
+        return;
+    else
+    {
+        nodes[id_next_unused].parent_id = node_to_perform;
+        nodes[id_next_unused].water_in_jug1 = nodes[node_to_perform].water_in_jug1;
+        nodes[id_next_unused].water_in_jug2 = 0;
+        nodes[id_next_unused].prev_operation = 4;
+        if(processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] == 0)
+            processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] =1,id_queue.push(id_next_unused),mm "4",id_next_unused++;
+    }
+}
+
+void rule5(int node_to_perform)
+{
+    if(nodes[node_to_perform].water_in_jug2==bf)
+        return;
+    else
+    {
+        nodes[id_next_unused].parent_id = node_to_perform;
+        nodes[id_next_unused].water_in_jug1 = nodes[node_to_perform].water_in_jug1 - (bf-nodes[node_to_perform].water_in_jug2);
+        nodes[id_next_unused].water_in_jug2 = bf;
+        nodes[id_next_unused].prev_operation = 5;
+        if(processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] == 0)
+            processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] =1,id_queue.push(id_next_unused),mm "5",id_next_unused++;
+    }
+}
+
+void rule6(int node_to_perform)
+{
+    if(nodes[node_to_perform].water_in_jug1==af)
+        return;
+    else
+    {
+        nodes[id_next_unused].parent_id = node_to_perform;
+        nodes[id_next_unused].water_in_jug1 = af;
+        nodes[id_next_unused].water_in_jug2 = nodes[node_to_perform].water_in_jug2-(af-nodes[node_to_perform].water_in_jug1);
+        nodes[id_next_unused].prev_operation = 6;
+        if(processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] == 0)
+            processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] =1,id_queue.push(id_next_unused),mm "6",id_next_unused++;
+    }
+}
+
+void rule7(int node_to_perform)
+{
+    if(nodes[node_to_perform].water_in_jug1==0 || (nodes[node_to_perform].water_in_jug1+nodes[node_to_perform].water_in_jug2)>bf)
+        return;
+    else
+    {
+        nodes[id_next_unused].parent_id = node_to_perform;
+        nodes[id_next_unused].water_in_jug1 = 0;
+        nodes[id_next_unused].water_in_jug2 = nodes[node_to_perform].water_in_jug1 + nodes[node_to_perform].water_in_jug2;
+        nodes[id_next_unused].prev_operation = 7;
+        if(processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] == 0)
+            processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] =1,id_queue.push(id_next_unused),mm "7",id_next_unused++;
+    }
+}
+
+void rule8(int node_to_perform)
+{
+    if(nodes[node_to_perform].water_in_jug2==0 || (nodes[node_to_perform].water_in_jug1+nodes[node_to_perform].water_in_jug2)>af)
+        return;
+    else
+    {
+        nodes[id_next_unused].parent_id = node_to_perform;
+        nodes[id_next_unused].water_in_jug1 = nodes[node_to_perform].water_in_jug1+nodes[node_to_perform].water_in_jug2;
+        nodes[id_next_unused].water_in_jug2 = 0;
+        nodes[id_next_unused].prev_operation = 8;
+        if(processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] == 0)
+            processed[{nodes[id_next_unused].water_in_jug1,nodes[id_next_unused].water_in_jug2}] =1,id_queue.push(id_next_unused),mm "8",id_next_unused++;
+        else
+            id_next_unused--;
+    }
+}
+
+void apply_rule_to_id(int node_to_perform)
+{
+    rule1(node_to_perform);
+    rule2(node_to_perform);
+    rule3(node_to_perform);
+    rule4(node_to_perform);
+    rule5(node_to_perform);
+    rule6(node_to_perform);
+    rule7(node_to_perform);
+    rule8(node_to_perform);
+}
+
+void perform()
+{
+    // mm id_queue.front();
+    // id_queue.pop();
+    // mm id_queue.empty();
+    mm "In perform";
+    while(id_queue.empty()!=1)
+    {
+        mm "In while of perform";
+        int node_to_perform = id_queue.front();
+        nn temp_node = nodes[node_to_perform];
+        pair<int,int> p (temp_node.water_in_jug1,temp_node.water_in_jug2);
+        mm "Doing "<<p.first<<" "<<p.second;
+        // else
+        if(nodes[node_to_perform].water_in_jug1==goal || nodes[node_to_perform].water_in_jug2==goal)
+        {
+            while(nodes[node_to_perform].prev_operation!=-1)
+            {
+                cout<<endl;
+                cout<<nodes[node_to_perform].water_in_jug1<<" ";
+                cout<<nodes[node_to_perform].water_in_jug2<<endl;
+                node_to_perform = nodes[node_to_perform].parent_id;
+            }
+            break;
+        }
+        
+        mm "Applying rules";
+        apply_rule_to_id(node_to_perform);
+        
+        id_queue.pop();
+        mm "All rules applied | Nodes remaining -> "<<id_queue.size();
+        
+    }
+}
+
+int main() 
+{
+    int aa,bb;
+    mm "Enter Initial Amount of water in Jug 1";
+    cin>>aa;
+    mm aa;
+    mm "Enter Initial Amount of water in Jug 2";
+    cin>>bb;
+    mm bb;
+    
+    mm "Enter Initial Capacity of water in Jug 1";
+    cin>>af;
+    mm af;
+    mm "Enter Initial Capacity of water in Jug 2";
+    cin>>bf;
+    mm bf;
+    
+    mm "Enter Amount you want seprate of water in Jug";
+    cin>>goal;
+    mm goal;
+    mm "---------------";
+    
+    
+    define_node(aa,bb,id_next_unused,-1,-1);
+    id_queue.push(id_next_unused);
+    id_next_unused++;
+    
+    perform();
+
+    return 0;
+}
